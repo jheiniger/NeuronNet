@@ -7,6 +7,7 @@ void Network::resize(const size_t &n, double inhib) {
     if (n <= old) return;
     size_t nfs(inhib*(n-old)+.5);
     set_default_params({{"FS", nfs}}, old);
+    dp_neighbors.resize(n);
 }
 
 void Network::set_default_params(const std::map<std::string, size_t> &types,
@@ -127,4 +128,55 @@ void Network::print_traj(const int time, const std::map<std::string, size_t> &_n
                 break;
             }
     (*_out) << std::endl;
+}
+
+neighborvector Network::neighbors(const size_t& index){
+	if(dp_neighbors[index].empty()){
+		for (auto I = links.begin(); I != links.end(); I++){
+			if((I->first).first == index){
+				dp_neighbors[index].push_back({(I->first).second, I->second});
+			}
+		}
+	}
+	 
+	
+	return dp_neighbors[index];	
+}
+
+std::pair<size_t, double> Network::degree(const size_t& index) {
+	double intensity(0.0);
+	std::vector<std::pair<size_t, double> > neighbor_neurons(neighbors(index));
+	for (auto neuron: neighbor_neurons){
+		intensity += neuron.second;
+	}
+	std::pair<size_t, double> deg(neighbor_neurons.size(), intensity);
+	return deg;	
+	
+}
+
+std::set<size_t> Network::step(const std::vector<double>& thalamic){
+	std::set<size_t> indexes;
+	for(size_t i = 0; i < neurons.size(); ++i){
+		if(neurons[i].firing()){
+			neurons[i].reset();
+			indexes.insert(i);			
+		}
+	}
+	
+	for(size_t i = 0; i < neurons.size(); ++i){
+		
+		neighborvector neighbor_neurons(neighbors(i));
+		double intensity(0.0);
+		for (auto neighbor: neighbor_neurons){
+			if((neurons[neighbor.first]).firing())
+			intensity += neighbor.second;
+		}
+		if(neurons[i].is_inhibitory()) (neurons[i]).input(intensity + 0.4 * thalamic[i]);
+		else  (neurons[i]).input(intensity + thalamic[i]);
+		neurons[i].step();
+	}
+		
+	
+	return indexes;
+	
 }

@@ -26,6 +26,7 @@
  */
 
 typedef std::map<std::pair<size_t, size_t>, double> linkmap;
+typedef std::vector<std::pair<size_t, double> > neighborvector;
 
 class Network {
 
@@ -79,14 +80,14 @@ public:
   \param n : the index of the receiving neuron.
   \return a pair {number of connections, sum of link intensities}.
  */
-    std::pair<size_t, double> degree(const size_t&) const;
+    std::pair<size_t, double> degree(const size_t&);
     const Neuron& neuron(const size_t n) const {return neurons.at(n);}
 /*! 
   Finds the list of neurons with incoming connections to \p n.
   \param n : the index of the receiving neuron.
   \return a vector of pairs {neuron index, link intensity}.
  */
-    std::vector<std::pair<size_t, double> > neighbors(const size_t&) const;
+    neighborvector neighbors(const size_t&);
     std::vector<double> potentials() const;
     std::vector<double> recoveries() const;
 /*! 
@@ -104,5 +105,7 @@ public:
 private:
     std::vector<Neuron> neurons;
     linkmap links;
+    std::vector<neighborvector> dp_neighbors;
+    
 
 };
