@@ -132,10 +132,10 @@ void Network::print_traj(const int time, const std::map<std::string, size_t> &_n
 
 neighborvector Network::neighbors(const size_t& index){
 	if(dp_neighbors[index].empty()){
-		for (auto I = links.begin(); I != links.end(); I++){
-			if((I->first).first == index){
+		for (auto I = links.lower_bound({index, 0}); (I->first).first == index; I++){
+			//if((I->first).first == index){
 				dp_neighbors[index].push_back({(I->first).second, I->second});
-			}
+			//}
 		}
 	}
 	 
